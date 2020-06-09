@@ -1,0 +1,594 @@
+---
+title: "TBSignatureProfiler on Malnutrition Data"
+author: "Evan Johnson"
+date: "6/8/2020"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    theme: "flatly"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages({
+  library(SummarizedExperiment)
+  library(SingleCellExperiment)
+  library(tidyverse)
+  library(TBSignatureProfiler)
+  library(sva)
+  library(Rtsne)
+  library(umap)
+  library(limma)
+  library(DT)
+  library(ComplexHeatmap)
+  library(enrichR)
+})
+
+```
+
+## Make and combine new data 
+```{r, eval=F}
+india44 <- read.table("~/projects/malnutrition/manuscript_BMC_ID/features_combined_44.txt", sep = "\t")
+india48 <- read.table("~/projects/malnutrition/manuscript_BMC_ID/features_combined_48.txt", sep = "\t")
+coldata <- read.table("~/projects/malnutrition/manuscript_BMC_ID/india_colData.txt", sep = "\t", header = TRUE)
+rowdata <- read.table("~/projects/malnutrition/manuscript_BMC_ID/feature_types.txt", header=TRUE)
+  
+#replace colnames of india44
+colnames(india44) <- gsub(x = colnames(india44), pattern= "SO_5007_([A-B])[0-9,A-Z]_([0-9]*)_[1-2]", replace="102\\2\\1")
+
+colnames(india44) <- gsub(x = colnames(india44), pattern= "SO_5007_Set2_102_0?([0-9][0-9][0-9][0-9][0-9])", replace="102\\1A")
+
+# Check that gsub did not create two columns with same name
+stopifnot(length(unique(colnames(india44)))==44)
+# Check that all column names are present in coldata
+stopifnot(all(colnames(india44) %in% coldata$SUBJID))
+
+# india48 colname replace
+colnames(india48) <- gsub(x=colnames(india48), pattern="X102.([0-9]*).([A-B])0?", replace="102\\1\\2")
+
+# Check that gsub did not create two columns with same name
+stopifnot(length(unique(colnames(india48)))==48)
+# Check that all column names are present in coldata
+stopifnot(all(colnames(india48) %in% coldata$SUBJID))
+
+#combine the india files, match colData and rowData
+india <- as.matrix(cbind(india44, india48))
+india <- india[,match(coldata$SUBJID,colnames(india))]
+rowdata <- rowdata[match(rownames(india),rowdata[,1]),]
+
+# make Summarized Experiment object
+indata <- SummarizedExperiment(assays = SimpleList(counts = as.matrix(india)), colData = coldata, rowData = rowdata)
+
+saveRDS(indata, file = "~/projects/malnutrition/manuscript_BMC_ID/indata_SCE.rds")
+```
+
+## Preprocess
+```{r, eval=F}
+# Want to have 10% present rate
+#indata <- indata[apply(assay(indata,"counts") != 0, 1, mean)>.1,] 
+
+## Correct some errors in metadata
+colData(indata)$Tb_status[grep("074", colnames(indata))] <- "LTBI"
+colData(indata)$Tb_status[grep("082", colnames(indata))] <- "LTBI"
+colData(indata)$Tb_status[grep("111", colnames(indata))] <- "LTBI"
+
+## Make Severely Malnourished column data
+colData(indata)$Tb_status <- factor(gsub("activeTB", "TB", as.character(colData(indata)$Tb_status)))
+colData(indata)$bmi_cat2 <- factor(gsub("severely malnourished", "mal", gsub("well nourished", "well", colData(indata)$bmi_cat2)))
+colData(indata)$status <- factor(paste(colData(indata)$Tb_status, colData(indata)$bmi_cat2, sep="_"))
+table(colData(indata)$status)
+
+## Removing Outliers
+indata <- indata[,-which(colnames(indata) %in% c("10200459B","10200335A","10200332A"))]
+
+```
+
+
+## Batch correct and make log_cpm
+```{r, eval=F}
+## Make batch variable
+batch=rep(1,ncol(indata))
+batch[colnames(indata) %in% c("10200247B")]=1
+batch[colnames(indata) %in% c("10200227B","10200346A","10200381A","10200308A","10200361A","10200365B","10200467B","10200341A","10200374A", "10200548B","10200343A","10200374B","10200346A","10200377A") ]=1
+batch[colnames(indata)%in% c("10200070A", "10200128A","10200056A", "10200075A","10200136A", "10200105A","10200034A","10200058A", "10200007A", "10200064A","10200159A","10200077A","10200073A","10200130A","10200181A","10200059A","10200040B","10200018B","10200065B","10200003B","10200024B","10200004B","10200009B","10200001B","10200057B","10200029B","10200077B","10200035B","10200061B","10200030B","10200063B","10200034B","10200010A","10200288A","10200082A","10200074A","10200060A","10200023A","10200140A","10200111A","10200112A","10200016A","10200015A","10200087A")]=2
+colData(indata)$batch <- factor(batch)
+rm(batch)
+
+modcombat <- model.matrix(~colData(indata)$bmi_cat2+colData(indata)$Tb_status)
+
+assay(indata, "combatseq") <- ComBat_seq(assay(indata, "counts"),
+                                      colData(indata)$batch, group=NULL,
+                                      covar_mod=modcombat)
+
+indata <- mkAssay(indata, input_name = "combatseq", log=T)
+saveRDS(indata, file = "~/projects/malnutrition/manuscript_BMC_ID/indata_SCE_batchcorrect.rds")
+```
+
+
+## Load Data
+
+```{r load}
+
+indata <- readRDS("~/projects/malnutrition/manuscript_BMC_ID/indata_SCE_batchcorrect.rds")
+dim(indata)
+
+## Filter to have 10% present rate
+indata <- indata[apply(assay(indata,"counts") != 0, 1, mean)>.20,] 
+dim(indata)
+
+### Malnutrition only
+indata <- indata[,which(colData(indata)$bmi_cat2 == "mal")]
+dim(indata)
+
+```
+
+## Dimension reduction plots {.tabset}
+
+### PCA
+
+```{r}
+indataSCE <- SingleCellExperiment(assays = list(log_cpm = assay(indata, "log_cpm")), colData = colData(indata))
+colnames(indataSCE) <- colnames(indata)
+dim(indataSCE)
+
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, shape = "batch",colorBy = "status")
+rm(indataSCE)
+```
+
+### tSNE 
+
+```{r}
+set.seed(1)
+tsne_out <- Rtsne(t(assay(indata,"log_cpm")), check_duplicates = FALSE, pca = TRUE, perplexity=10, theta=0.5, dims=2)
+
+embedding <- as.data.frame(tsne_out$Y)
+embedding$Class <- as.factor(indata$Tb_status)
+
+g <- ggplot(embedding, aes(x=V1, y=V2, color=Class, label = colnames(assay(indata,"log_cpm")))) + geom_point(size=1.5) + xlab("T-SNE 1") + ylab("T-SNE 2") + theme(plot.title = element_text(hjust = 0.5)) + 
+ggtitle("TSNE Plot")
+
+plot(g)
+```
+
+### UMAP 
+```{r}
+set.seed(1)
+umap_out <- umap(t(assay(indata,"log_cpm")))
+
+embedding <- as.data.frame(umap_out$layout)
+embedding$Class <- as.factor(indata$Tb_status)
+
+g <- ggplot(embedding, aes(x=V1, y=V2, color=Class, label = colnames(assay(indata,"log_cpm")))) + geom_point(size=1.5) + xlab("UMAP 1") + ylab("UMAP 2") + theme(plot.title = element_text(hjust = 0.5)) + 
+ggtitle("UMAP Plot")
+
+plot(g)
+```
+
+
+
+## Differential Expression {.tabset}
+
+### DE Genes
+```{r}
+designBC <- model.matrix(~Tb_status, data=colData(indata))
+colnames(designBC) <- c("Intercept", "activeTB")
+fitBC <- lmFit(assay(indata, "log_cpm"), designBC)
+
+contrast.matrixTB<- makeContrasts(activeTB, levels = designBC)
+fitTB <- contrasts.fit(fitBC,contrast.matrixTB)
+fitTB <- eBayes(fitTB)
+limmaResTB <- topTable(fitTB, adjust.method = "BH", n = Inf, sort.by = "P")
+
+#Getting significant genes and rownames to plot
+adjpcutoff <- 0.01
+limmaResTB.sig <- subset(limmaResTB, adj.P.Val < adjpcutoff)
+write.csv(limmaResTB.sig,"~/projects/malnutrition/manuscript_BMC_ID/figures/malnut_only_siggenes.csv",quote=F)
+datatable(limmaResTB.sig,options=list(scrollX=T,pageLength=15),rownames = T)
+
+mean(unlist(TBsignatures) %in% rownames(limmaResTB.sig))
+
+### keep only protein coding genes
+annotations <- rowData(indata)[match(rownames(limmaResTB.sig), rowData(indata)[,1]),2]
+table(annotations)
+
+sigGenesTB <-rownames(limmaResTB.sig[annotations=="protein_coding",])
+
+```
+
+### Heatmap
+```{r}
+
+mat = as.matrix(assay(indata,"log_cpm")[sigGenesTB[1:500],])
+mat = t(scale(t(mat)))
+
+df=data.frame(TB_status=colData(indata)$Tb_status) 
+ha = HeatmapAnnotation(df = df, col = list(TB_status=c("TB"="Red","LTBI"="Blue")))
+
+Heatmap(mat,show_row_names=F,show_column_names = F, top_annotation = ha)
+```
+
+## Differential Expression Clustering Heatmap for the paper
+```{r}
+# some things related to colors
+special_red <- RColorBrewer::brewer.pal(3, "Set1")[1]
+special_blue <- RColorBrewer::brewer.pal(3, "Set1")[2]
+
+# COLORS FOR HEATMAP
+col.me <- viridis::viridis(15)
+colorList <- list("status" = setNames(c(special_red,
+                                        special_blue),
+                                      c("TB_mal", "LTBI_mal")))
+
+  mat = as.matrix(assay(indata,"log_cpm")[sigGenesTB[1:500],])
+  mat = t(scale(t(mat)))
+
+  df=data.frame("TB Status"=colData(indata)$Tb_status) 
+  annot <- HeatmapAnnotation(df = df, col = list(TB_status = c(
+    "TB" = special_red, "LTBI" = special_blue)))
+  
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_DIFF_EXP.png", width = 12, height = 10, units = "in",
+      res = 150)
+  Heatmap(mat, show_row_names = F,
+          show_column_names = F,
+          top_annotation = annot,
+          col = col.me,
+          name = "Expression")
+  dev.off()
+```
+  
+  
+### Pathway analysis {.tabset}
+```{r}
+
+pathway=enrichr(sigGenesTB[1:1000],databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+#pathway=enrichr(sigGenesTB,databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+```
+
+#### Wiki Pathways
+```{r}
+datatable(pathway$WikiPathways_2013[pathway$WikiPathways_2013$Adjusted.P.value<.5,],options=list(scrollX=T,pageLength=15),rownames = F)
+```
+
+#### Reactome Pathways
+```{r}
+datatable(pathway$Reactome_2016[pathway$Reactome_2016$Adjusted.P.value<.5,],options=list(scrollX=T,pageLength=15),rownames = F)
+```
+
+#### KEGG Pathways
+```{r}
+datatable(pathway$KEGG_2016[pathway$KEGG_2016$Adjusted.P.value<.5,],options=list(scrollX=T,pageLength=15),rownames = F)
+
+```
+
+#### Panther Pathways
+```{r}
+datatable(pathway$Panther_2016[pathway$Panther_2016$Adjusted.P.value<.5,],options=list(scrollX=T,pageLength=15),rownames = F)
+```
+
+
+## Run the TBSignatureProfiler
+
+```{r}
+TBsignatures$'Suliman_RISK_4' <- c("GAS6","SEPTIN4","CD1C","BLK")
+TBsignatures$'Lee_4' <- c("INTS13", "DHX29", "NEMF",  "PTPRC")
+
+indata$TB.status <- factor(paste(indata$status))
+siglist_mal <- names(TBsignatures)
+
+ssgsea_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
+                               algorithm = "ssGSEA")
+gsva_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
+                               algorithm = "GSVA")
+plage_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
+                             algorithm = "PLAGE")
+
+```
+
+
+## Methods Figure 1: table of genes in five or more sigs, decending order
+```{r}
+# some things related to colors
+special_red <- RColorBrewer::brewer.pal(3, "Set1")[1]
+special_blue <- RColorBrewer::brewer.pal(3, "Set1")[2]
+
+# COLORS FOR HEATMAP
+col.me <- viridis::viridis(15)
+colorList <- list("status" = setNames(c(special_red,
+                                        special_blue),
+                                      c("TB_mal", "LTBI_mal")))
+# colorList <- list("status" = setNames(c(viridis::magma(20)[12],
+#                                         viridis::magma(20)[18]),
+#                                       c("TB_mal", "LTBI_mal")))
+
+png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/genes_in_5plus.png", width = 8, height = 7, 
+      units = "in", res = 150)
+  genesin5ormore <- names(sort(table(unlist(TBsignatures)), 
+                               decreasing = TRUE)[sort(table(unlist(TBsignatures)),
+                                                       decreasing = TRUE) > 4])
+  geneoverlapdf <- data.frame(row.names = genesin5ormore)
+  for(i in names(TBsignatures)){
+    geneoverlapdf[,i] <- ifelse(rownames(geneoverlapdf)%in% TBsignatures[[i]], 
+                                "Yes", "No")
+  }
+  geneoverlapdf <- geneoverlapdf[,order(colSums(geneoverlapdf == "Yes"), 
+                                        decreasing = TRUE)]
+  geneoverlapdf <- geneoverlapdf[order(rowSums(geneoverlapdf == "Yes"), 
+                                       decreasing = TRUE),]
+  draw(Heatmap(t(as.matrix(geneoverlapdf)), col=c("white", special_blue), 
+               row_names_gp = gpar(fontsize = 8), 
+               column_names_gp = gpar(fontsize = 8), 
+               rect_gp = gpar(col="grey", lty=1),
+               name = "Gene in Signature"), 
+       heatmap_legend_side = "bottom")
+  dev.off()
+
+```
+
+## Methods Table XX: Signature Overlap
+```{r}  
+overlap_matrix <- matrix(0, nrow = length(TBsignatures), 
+                           ncol = length(TBsignatures))
+  
+  for (i in 1:length(TBsignatures)){
+    for (j in 1:length(TBsignatures)){
+      overlap_matrix[i, j] <- sum(
+        !is.na(match(TBsignatures[[i]],
+                     TBsignatures[[j]]))) / length(TBsignatures[[i]])
+    }
+  }
+  
+  rownames(overlap_matrix) <- colnames(overlap_matrix) <- names(TBsignatures)
+  over_pct <- round(overlap_matrix, 3) * 100
+  write.csv(overlap_matrix, file = "~/projects/malnutrition/manuscript_BMC_ID/figures/overlap.csv", quote = FALSE)
+```
+
+
+## Figure 1. Heatmap of all signatures (ssGSEA)
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_ssGSEA.png", width = 12, height = 10, units = "in",
+      res = 150)
+  signatureHeatmap(ssgsea_res, name = "ssGSEA", 
+                   signatureColNames = names(TBsignatures),
+                   annotationColNames = c("status"),
+                   showColumnNames = FALSE, scale = TRUE,
+                   choose_color = col.me,
+                   cluster_columns = TRUE,
+                   split_heatmap = "disease",
+                   colList = colorList)
+  dev.off()
+```
+
+## Supplementary Figure 1. Heatmap of all signatures  (GSVA)
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_GSVA.png", width = 12, height = 10, units = "in",res = 150)
+  signatureHeatmap(gsva_res, name = "GSVA", 
+                   signatureColNames = names(TBsignatures),
+                   annotationColNames = c("status"),
+                   showColumnNames = FALSE, scale = TRUE,
+                   choose_color = col.me,
+                   cluster_columns = TRUE,
+                   split_heatmap = "disease",
+                   colList = colorList)
+  dev.off()
+```
+
+## Figure 2a. Boxplots of AUCs.
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_ssGSEA.png", width = 10, height = 10, 
+      units = "in", res = 150)
+  signatureBoxplot(ssgsea_res, name="ssGSEA", 
+                   signatureColNames = names(TBsignatures),
+                   annotationColName = c("status"), 
+                   fill_colors = c(special_blue, special_red))
+  dev.off()
+```
+
+
+## Figure 2b. Boxplot of the scores (LTBI v TB) by signature
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_ssGSEA.png", width = 7, height = 5, 
+      units = "in", res = 150)
+  par(mar = c(7,2,2,1))
+  compareBoxplots(ssgsea_res, signatureColNames = names(TBsignatures),
+                  annotationColName = "status", pb.show = TRUE,
+                  name = "ssGSEA", rotateLabels = TRUE,
+                  fill.col = special_red)
+  dev.off()
+```
+
+## Supplementary Figure 2a. GSVA results
+  
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_GSVA.png", width = 10, height = 10, units = "in",
+      res = 150)
+  signatureBoxplot(gsva_res, signatureColNames = names(TBsignatures),
+                   annotationColName = c("status"), name = "GSVA",
+                   fill_colors = c(special_blue, special_red), 
+                   rotateLabels = TRUE)
+  dev.off()
+```
+
+  
+## Supplementary Figure 2b. GSVA results
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_GSVA.png", width = 7, height = 5, 
+      units = "in", res = 150)
+  par(mar = c(7,2,2,1))
+  compareBoxplots(gsva_res, signatureColNames = names(TBsignatures),
+                  annotationColName = "status", pb.show = TRUE,
+                  name = "GSVA", fill.col = special_red,
+                  rotateLabels = TRUE)
+  dev.off()
+```
+
+  
+## Figure 3. Heatmap of genes for selected signatures {.tabset}
+```{r}
+  # Sambarey_HIV_10
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Sambarey_HIV_10.png", width = 6, height = 4, units = "in",
+      res = 150)
+  signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
+                       sigGenes = TBsignatures[["Sambarey_HIV_10"]],
+                       name = "Sambarey_HIV_10", signatureColNames = NULL, 
+                       annotationColNames = c("status"), scale = TRUE,
+                       choose_color = col.me,
+                       colList = colorList,
+                       cluster_columns = TRUE,
+                       showColumnNames = FALSE)
+  dev.off()
+```
+
+  
+### Thompson_9
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Thompson_9.png", width = 6, height = 4, units = "in",
+      res = 150)
+  signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
+                       TBsignatures[["Thompson_9"]],
+                       name = "Thompson_9", signatureColNames = NULL, 
+                       choose_color = col.me,
+                       colList = colorList,
+                       annotationColNames = c("status"),
+                       cluster_columns = TRUE,
+                       showColumnNames = FALSE)
+  dev.off()
+```
+
+  
+### Lee_4
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Lee_4.png", width = 6, height = 4, units = "in",
+      res = 150)
+  signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
+                       TBsignatures[["Lee_4"]],
+                       name = "Lee_4", signatureColNames = NULL, 
+                       choose_color = col.me,
+                       colList = colorList,
+                       annotationColNames = c("status"),
+                       cluster_columns = TRUE,
+                       showColumnNames = FALSE)
+  dev.off()
+```
+
+  
+### Maertzdorf_4
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Maertzdorf_4.png", width = 6, height = 4, units = "in",
+      res = 150)
+  signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
+                       TBsignatures[["Maertzdorf_4"]],
+                       name = "Maertzdorf_4", signatureColNames = NULL, 
+                       choose_color = col.me,
+                       colList = colorList,
+                       annotationColNames = c("status"),
+                       cluster_columns = TRUE,
+                       showColumnNames = FALSE)
+  dev.off()
+```
+
+  
+## Supplementary figure XX: ROC curves for all sigs
+```{r}
+
+  # ssGSEA
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/ssgsea_ROC.png", width = 11, height = 9, units = "in",
+      res = 150)
+  signatureROCplot_CI(ssgsea_res, signatureColNames = names(TBsignatures),
+                      scale = TRUE, annotationColName = "status",
+                      name = 
+                        "ROC Plots for Gene Signatures, 95% Confidence, ssGSEA",
+                      nrow = 6, ncol = 6, choose_colors = c(special_blue,
+                                                            "gray50",
+                                                            "gray79"))
+  dev.off()
+  
+```
+
+  
+## GSVA
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/gsva_ROC.png", width = 11, height = 9, units = "in",
+      res = 150)
+  signatureROCplot_CI(gsva_res, signatureColNames = names(TBsignatures),
+                      scale = TRUE, annotationColName = "status",
+                      name = 
+                        "ROC Plots for Gene Signatures, 95% Confidence, GSVA",
+                      nrow = 6, ncol = 6, choose_colors = c(special_blue,
+                                                            "gray50",
+                                                            "gray79"),
+                      )
+  dev.off()
+```
+  
+## Supplementary Table 1: TableAUC for ssGSEA 
+```{r}
+  out.ssgsea <- tableAUC(ssgsea_res, "status", names(TBsignatures), 
+                         output = "data.frame")
+  datatable(out.ssgsea)
+  write.csv(out.ssgsea, file = "~/projects/malnutrition/manuscript_BMC_ID/figures/ssGSEA_TableAUC.csv")
+```
+  
+## Supplementary figure XX: TableAUC for GSVA 
+```{r}
+  out.gsva <- tableAUC(gsva_res, "status", names(TBsignatures), output = "data.frame")  
+  datatable(out.gsva)
+```
+  
+
+## Supplementary figure 6a: PLAGE results 
+
+```{r}
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_.png", width = 10, height = 10, units = "in",
+      res = 150)
+  signatureBoxplot(plage_res, signatureColNames = names(TBsignatures),
+                   annotationColName = c("status"), name = "PLAGE",
+                   fill_colors = c(special_blue, special_red), 
+                   rotateLabels = TRUE)
+  dev.off()
+```
+  
+## Supplementary Figure 6b. PLAGE results 
+```{r}
+  
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_PLAGE.png", width = 7, height = 5, 
+      units = "in", res = 150)
+  par(mar = c(7,2,2,1))
+  compareBoxplots(plage_res, signatureColNames = names(TBsignatures),
+                  annotationColName = "status", pb.show = TRUE,
+                  name = "PLAGE", fill.col = special_red,
+                  rotateLabels = TRUE)
+  dev.off()
+```
+  
+## Supplementary Figure 4. Heatmap of all signatures (PLAGE)
+```{r}
+  
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_PLAGE.png", width = 12, height = 10, units = "in",
+      res = 150)
+  signatureHeatmap(plage_res, name = "PLAGE", 
+                   signatureColNames = names(TBsignatures),
+                   annotationColNames = c("status"),
+                   showColumnNames = FALSE, scale = TRUE,
+                   choose_color = col.me,
+                   cluster_columns = TRUE,
+                   split_heatmap = "disease",
+                   colList = colorList)
+  dev.off()
+```
+  
+
+##  Session Info
+
+```{r session info}
+sessionInfo()
+```
+

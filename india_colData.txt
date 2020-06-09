@@ -1,0 +1,93 @@
+SUBJID	FID	age	HC_RELATN	HC_SMOKHX	HC_DMDX	alcfrq	alcdostx	alcuse	alc_score	indur	tst_read	sex	riskyalc	IC_COUGHDUR	time2pos_days	ZN_AFBQUAN	IC_SMOKHX	IC_DMDX	IC_RBS	diabetes	BMI	Tb_status	bmi_cat2
+10200042B	1	45	Son/Daughter	No, never	No	0	0	0	0	14	2	2	0	2	11	3+			NA	NA	14.81	LTBI	severely malnourished
+10200088B	1	23	Son/Daughter	No, never	No	0	0	0	0	8	2	1	0	2	11	3+			NA	NA	13.92	LTBI	severely malnourished
+10200129B	1	25	Spouse	No, never	No	0	0	0	0	17	2	1	0	2	11	3+			NA	NA	24.15	LTBI	well nourished
+10200131B	7	40	Son/Daughter	No, never	No	0	0	0	0	7	2	2	0	NA	NA				NA	NA	15.09	LTBI	severely malnourished
+10200171B	8	39	Spouse	No, never	No	0	0	0	0	15	2	2	0	4	8	1+			NA	NA	28.12	LTBI	well nourished
+10200188B	7	21	Spouse	No, never	No	0	0	0	0	15	2	2	0	NA	NA				NA	NA	22.87	LTBI	well nourished
+10200216B	8	12	Son/Daughter	No, never	No	0	0	0	0	17	2	2	0	4	8	1+			NA	NA	22.44	LTBI	well nourished
+10200217B	4	40	Spouse	No, never	No	0	0	0	0	14	2	2	0	2	6	2+			NA	NA	27.81	LTBI	well nourished
+10200227B	4	17	Brother/Sister	No, never	No	0	0	0	0	19	2	1	0	2	6	2+			NA	NA	22.31	LTBI	well nourished
+10200240B	10	50	Spouse	No, never	No	0	0	0	0	6	2	2	0	4	7	2+			NA	NA	27.44	LTBI	well nourished
+10200241B	7	19	Son/Daughter	No, never	No	0	0	0	0	5	2	2	0	NA	NA				NA	NA	13.87	LTBI	severely malnourished
+10200246B	12	34	Brother/Sister	No, never	No	0	0	0	0	10	2	2	0	4	5	3+			NA	NA	15.61	LTBI	severely malnourished
+10200247B	10	17	Mother	No, never	No	0	0	0	0	14	2	2	0	4	7	2+			NA	NA	21.26	LTBI	well nourished
+10200261B	10	13	Spouse	No, never	No	0	0	0	0	7	2	2	0	4	7	2+			NA	NA	22.81	LTBI	well nourished
+10200265B	10	24	Brother/Sister	No, never	No	0	0	0	0	13	2	2	0	4	7	2+			NA	NA	14.21	LTBI	severely malnourished
+10200275B	2	46	Spouse	No, never	No	0	0	0	0	9	2	1	0	NA	NA				NA	NA	33.16	LTBI	well nourished
+10200277B	2	22	Son/Daughter	No, never	No	0	0	0	0	14	2	1	0	NA	NA				NA	NA	19.52	LTBI	well nourished
+10200290B	2	17	Spouse	No, never	No	0	0	0	0	5	2	2	0	NA	NA				NA	NA	27.2	LTBI	well nourished
+10200291B	2	23	Son/Daughter	No, never	No	0	0	0	0	8	2	2	0	NA	NA				NA	NA	21.01	LTBI	well nourished
+10200298B	19	22	Spouse	No, never	No	0	0	0	0	9	2	2	0	3	5	3+			NA	NA	30.83	LTBI	well nourished
+10200303A	NA	18				0	0	0	0	NA	NA	2	0	4	8	3+	No, never	No	112	0	15.02	activeTB	severely malnourished
+10200304B	19	60	Son/Daughter	No, never	No	0	0	0	0	5	2	1	0	3	5	3+			NA	NA	19.09	LTBI	well nourished
+10200308A	NA	66				4	1	0	5	NA	NA	1	1	4	4	3+	Yes, former	No	128	0	13.95	activeTB	severely malnourished
+10200308B	22	37	Spouse	No, never	No	0	0	0	0	5	2	2	0	NA	NA				NA	NA	26.31	LTBI	well nourished
+10200310B	22	18	Son/Daughter	No, never	No	0	0	0	0	7	2	1	0	NA	NA				NA	NA	15.68	LTBI	severely malnourished
+10200311A	NA	45				4	0	0	4	NA	NA	1	1	4	NA	1+	Yes, former	No	73	0	15.75	activeTB	severely malnourished
+10200315A	NA	15				0	0	0	0	NA	NA	2	0	4	NA	1+	No, never	No	97	0	14.11	activeTB	severely malnourished
+10200323B	22	20	Brother/Sister	No, never	No	0	0	0	0	15	2	1	0	NA	NA				NA	NA	15.72	LTBI	severely malnourished
+10200332A	NA	68				4	1	1	6	NA	NA	1	1	4	8	1+	Yes, current	No	81	0	15.02	activeTB	severely malnourished
+10200335A	NA	16				0	0	0	0	NA	NA	1	0	4	NA	1+	No, never	No	87	0	13.95	activeTB	severely malnourished
+10200341A	NA	45				4	0	0	4	NA	NA	1	1	4	8	3+	Yes, former	No	135	0	14.43	activeTB	severely malnourished
+10200343A	NA	38				4	1	1	6	NA	NA	1	1	4	14	3+	Yes, current	No	108	0	13.88	activeTB	severely malnourished
+10200346A	NA	47				4	0	0	4	NA	NA	1	1	4	6	2+	Yes, former	No	95	0	15.86	activeTB	severely malnourished
+10200347A	NA	49				4	1	1	6	NA	NA	1	1	4	6	1+	Yes, former	No	144	0	15.02	activeTB	severely malnourished
+10200349A	NA	18				4	0	0	4	NA	NA	1	1	2	7	1+	Yes, current	No	89	0	14.8	activeTB	severely malnourished
+10200350B	21	36	Son/Daughter	No, never	No	0	0	0	0	5	2	2	0	4	7	2+			NA	NA	15.66	LTBI	severely malnourished
+10200361A	NA	64				4	2	2	8	NA	NA	1	1	4	7	1+	Yes, former	No	107	0	15.01	activeTB	severely malnourished
+10200365B	19	46	Son/Daughter	No, never	No	0	0	0	0	6	2	2	0	3	5	3+			NA	NA	14.38	LTBI	severely malnourished
+10200373B	19	54	Son/Daughter	No, never	No	0	0	0	0	8	2	1	0	3	5	3+			NA	NA	13.72	LTBI	severely malnourished
+10200374A	NA	67				0	0	0	0	NA	NA	1	0	2	5	1+	Yes, former	No	104	0	14.77	activeTB	severely malnourished
+10200374B	19	22	Son/Daughter	No, never	No	0	0	0	0	6	2	2	0	3	5	3+			NA	NA	14.04	LTBI	severely malnourished
+10200377A	NA	50				4	1	1	6	NA	NA	1	1	4	6	2+	Yes, current	No	120	0	13	activeTB	severely malnourished
+10200380A	NA	64				0	0	0	0	NA	NA	1	0	2	8	1+	No, never	No	79	0	15.59	activeTB	severely malnourished
+10200381A	NA	48				4	1	2	7	NA	NA	1	1	2	3	1+	Yes, current	No	83	0	13.61	activeTB	severely malnourished
+10200459B	19	19	Brother/Sister	No, never	No	0	0	0	0	19	2	2	0	3	5	3+			NA	NA	15.82	LTBI	severely malnourished
+10200467B	19	57	Grandchild	No, never	No	0	0	0	0	12	2	2	0	3	5	3+			NA	NA	15.81	LTBI	severely malnourished
+10200525B	19	31	Son/Daughter	No, never	No	0	0	0	0	5	2	1	0	3	5	3+			NA	NA	15.17	LTBI	severely malnourished
+10200548B	19	30	Son/Daughter	No, never	No	0	0	0	0	5	2	1	0	3	5	3+			NA	NA	15.81	LTBI	severely malnourished
+10200070A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	20.4	activeTB	well nourished
+10200128A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	23.2	activeTB	well nourished
+10200056A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	21.7	activeTB	well nourished
+10200075A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	18.9	activeTB	well nourished
+10200136A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	19.3	activeTB	well nourished
+10200105A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	18.6	activeTB	well nourished
+10200034A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	19.4	activeTB	well nourished
+10200058A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	19.2	activeTB	well nourished
+10200007A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	21.5	activeTB	well nourished
+10200064A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	20.1	activeTB	well nourished
+10200159A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	19	activeTB	well nourished
+10200077A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	20.3	activeTB	well nourished
+10200073A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	19.2	activeTB	well nourished
+10200130A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	26	activeTB	well nourished
+10200181A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	20.9	activeTB	well nourished
+10200059A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	24.9	activeTB	well nourished
+10200040B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	21.8	LTBI	well nourished
+10200018B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	23.5	LTBI	well nourished
+10200065B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	25	LTBI	well nourished
+10200003B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	24.8	LTBI	well nourished
+10200024B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	24.1	LTBI	well nourished
+10200004B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	24.3	LTBI	well nourished
+10200009B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	26.3	LTBI	well nourished
+10200001B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	28.8	LTBI	well nourished
+10200057B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	22.3	LTBI	well nourished
+10200029B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	38.7	LTBI	well nourished
+10200077B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	21.7	LTBI	well nourished
+10200035B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	26	LTBI	well nourished
+10200061B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	22	LTBI	well nourished
+10200030B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	23.8	LTBI	well nourished
+10200063B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	25.3	LTBI	well nourished
+10200034B	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	22.4	LTBI	well nourished
+10200010A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	15.1	activeTB	severely malnourished
+10200288A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	13.8	activeTB	severely malnourished
+10200082A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	17.9	activeTB	well nourished
+10200074A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	14.3	activeTB	severely malnourished
+10200060A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	14.2	activeTB	severely malnourished
+10200023A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	15.1	activeTB	severely malnourished
+10200140A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	21.4	activeTB	well nourished
+10200111A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	16.5	activeTB	well nourished
+10200112A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	11.5	activeTB	severely malnourished
+10200016A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	15.6	activeTB	severely malnourished
+10200015A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	14.3	activeTB	severely malnourished
+10200087A	NA	NA				NA	NA	NA	NA	NA	NA	NA	NA	NA	NA				NA	NA	15.6	activeTB	severely malnourished
