@@ -88,6 +88,7 @@ indata <- indata[,-which(colnames(indata) %in% c("10200459B","10200335A","102003
 ```
 
 
+
 ## Batch correct and make log_cpm
 ```{r, eval=F}
 ## Make batch variable
@@ -108,7 +109,6 @@ indata <- mkAssay(indata, input_name = "combatseq", log=T)
 saveRDS(indata, file = "~/projects/malnutrition/manuscript_BMC_ID/indata_SCE_batchcorrect.rds")
 ```
 
-
 ## Load Data
 
 ```{r load}
@@ -128,16 +128,61 @@ dim(indata)
 
 ## Dimension reduction plots {.tabset}
 
-### PCA
+### PCA {.tabset}
 
+#### Before Batch Correction (color by Batch)
+```{r}
+indataTMP <- indata 
+indataTMP <- mkAssay(indataTMP, input_name = "counts", log=T)
+
+indataSCE <- SingleCellExperiment(assays = list(log_cpm = assay(indataTMP, "log_cpm")), colData = colData(indata))
+colnames(indataSCE) <- colnames(indataTMP)
+dim(indataSCE)
+
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
+
+  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_raw.png", width = 4, height = 3, units = "in",
+      res = 150)
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
+  dev.off()
+
+  rm(indataSCE)
+rm(indataTMP)
+```
+
+#### After Batch Correction (color by Batch)
+```{r}
+indataSCE <- SingleCellExperiment(assays = list(log_cpm = assay(indata, "log_cpm")), colData = colData(indata))
+colnames(indataSCE) <- colnames(indata)
+dim(indataSCE)
+
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
+
+ png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_adj_colbatch.png", width = 4, height = 3, units = "in",
+      res = 150)
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
+  dev.off()
+  
+rm(indataSCE)
+```
+
+
+#### After Batch Correction (color by TBstatus)
 ```{r}
 indataSCE <- SingleCellExperiment(assays = list(log_cpm = assay(indata, "log_cpm")), colData = colData(indata))
 colnames(indataSCE) <- colnames(indata)
 dim(indataSCE)
 
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, shape = "batch",colorBy = "status")
+
+ png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_adj_colstatus.png", width = 4, height = 3, units = "in",
+      res = 150)
+singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, shape = "batch", colorBy = "status")
+  dev.off()
+  
 rm(indataSCE)
 ```
+
 
 ### tSNE 
 
@@ -219,16 +264,16 @@ special_blue <- RColorBrewer::brewer.pal(3, "Set1")[2]
 
 # COLORS FOR HEATMAP
 col.me <- viridis::viridis(15)
-colorList <- list("status" = setNames(c(special_red,
-                                        special_blue),
+colorList <- list("status" = setNames(c("Red",
+                                        "Blue"),
                                       c("TB_mal", "LTBI_mal")))
 
   mat = as.matrix(assay(indata,"log_cpm")[sigGenesTB[1:500],])
   mat = t(scale(t(mat)))
 
   df=data.frame("TB Status"=colData(indata)$Tb_status) 
-  annot <- HeatmapAnnotation(df = df, col = list(TB_status = c(
-    "TB" = special_red, "LTBI" = special_blue)))
+  annot <- HeatmapAnnotation(df = df, col = list(TB.Status = c(
+    "TB" = "Red", "LTBI" = "Blue")))
   
   png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_DIFF_EXP.png", width = 12, height = 10, units = "in",
       res = 150)
@@ -543,6 +588,12 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   datatable(out.gsva)
 ```
   
+## Supplementary figure XX: TableAUC for PLAGE 
+```{r}
+  out.plage <- tableAUC(plage_res, "status", names(TBsignatures), output = "data.frame")  
+  datatable(out.plage)
+```
+
 
 ## Supplementary figure 6a: PLAGE results 
 
