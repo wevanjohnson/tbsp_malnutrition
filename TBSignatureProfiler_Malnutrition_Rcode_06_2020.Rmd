@@ -26,16 +26,17 @@ suppressPackageStartupMessages({
   library(DT)
   library(ComplexHeatmap)
   library(enrichR)
+  library(singleCellTK)
 })
 
 ```
 
 ## Make and combine new data 
 ```{r, eval=F}
-india44 <- read.table("~/projects/malnutrition/manuscript_BMC_ID/features_combined_44.txt", sep = "\t")
-india48 <- read.table("~/projects/malnutrition/manuscript_BMC_ID/features_combined_48.txt", sep = "\t")
-coldata <- read.table("~/projects/malnutrition/manuscript_BMC_ID/india_colData.txt", sep = "\t", header = TRUE)
-rowdata <- read.table("~/projects/malnutrition/manuscript_BMC_ID/feature_types.txt", header=TRUE)
+india44 <- read.table("features_combined_44.txt", sep = "\t")
+india48 <- read.table("features_combined_48.txt", sep = "\t")
+coldata <- read.table("india_colData.txt", sep = "\t", header = TRUE)
+rowdata <- read.table("feature_types.txt", header=TRUE)
   
 #replace colnames of india44
 colnames(india44) <- gsub(x = colnames(india44), pattern= "SO_5007_([A-B])[0-9,A-Z]_([0-9]*)_[1-2]", replace="102\\2\\1")
@@ -63,7 +64,7 @@ rowdata <- rowdata[match(rownames(india),rowdata[,1]),]
 # make Summarized Experiment object
 indata <- SummarizedExperiment(assays = SimpleList(counts = as.matrix(india)), colData = coldata, rowData = rowdata)
 
-saveRDS(indata, file = "~/projects/malnutrition/manuscript_BMC_ID/indata_SCE.rds")
+saveRDS(indata, file = "indata_SCE.rds")
 ```
 
 ## Preprocess
@@ -106,14 +107,14 @@ assay(indata, "combatseq") <- ComBat_seq(assay(indata, "counts"),
                                       covar_mod=modcombat)
 
 indata <- mkAssay(indata, input_name = "combatseq", log=T)
-saveRDS(indata, file = "~/projects/malnutrition/manuscript_BMC_ID/indata_SCE_batchcorrect.rds")
+saveRDS(indata, file = "indata_SCE_batchcorrect.rds")
 ```
 
 ## Load Data
 
 ```{r load}
 
-indata <- readRDS("~/projects/malnutrition/manuscript_BMC_ID/indata_SCE_batchcorrect.rds")
+indata <- readRDS("indata_SCE_batchcorrect.rds")
 dim(indata)
 
 ## Filter to have 10% present rate
@@ -141,7 +142,7 @@ dim(indataSCE)
 
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
 
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_raw.png", width = 4, height = 3, units = "in",
+  png(filename = "figures/PCA_raw.png", width = 4, height = 3, units = "in",
       res = 150)
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
   dev.off()
@@ -158,7 +159,7 @@ dim(indataSCE)
 
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
 
- png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_adj_colbatch.png", width = 4, height = 3, units = "in",
+ png(filename = "figures/PCA_adj_colbatch.png", width = 4, height = 3, units = "in",
       res = 150)
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
   dev.off()
@@ -175,7 +176,7 @@ dim(indataSCE)
 
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, shape = "batch",colorBy = "status")
 
- png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/PCA_adj_colstatus.png", width = 4, height = 3, units = "in",
+ png(filename = "figures/PCA_adj_colstatus.png", width = 4, height = 3, units = "in",
       res = 150)
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, shape = "batch", colorBy = "status")
   dev.off()
@@ -231,7 +232,7 @@ limmaResTB <- topTable(fitTB, adjust.method = "BH", n = Inf, sort.by = "P")
 #Getting significant genes and rownames to plot
 adjpcutoff <- 0.01
 limmaResTB.sig <- subset(limmaResTB, adj.P.Val < adjpcutoff)
-write.csv(limmaResTB.sig,"~/projects/malnutrition/manuscript_BMC_ID/figures/malnut_only_siggenes.csv",quote=F)
+write.csv(limmaResTB.sig,"figures/malnut_only_siggenes.csv",quote=F)
 datatable(limmaResTB.sig,options=list(scrollX=T,pageLength=15),rownames = T)
 
 mean(unlist(TBsignatures) %in% rownames(limmaResTB.sig))
@@ -275,7 +276,7 @@ colorList <- list("status" = setNames(c("Red",
   annot <- HeatmapAnnotation(df = df, col = list(TB.Status = c(
     "TB" = "Red", "LTBI" = "Blue")))
   
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_DIFF_EXP.png", width = 12, height = 10, units = "in",
+  png(filename = "figures/Heatmap_DIFF_EXP.png", width = 12, height = 10, units = "in",
       res = 150)
   Heatmap(mat, show_row_names = F,
           show_column_names = F,
@@ -349,7 +350,7 @@ colorList <- list("status" = setNames(c(special_red,
 #                                         viridis::magma(20)[18]),
 #                                       c("TB_mal", "LTBI_mal")))
 
-png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/genes_in_5plus.png", width = 8, height = 7, 
+png(filename = "figures/genes_in_5plus.png", width = 8, height = 7, 
       units = "in", res = 150)
   genesin5ormore <- names(sort(table(unlist(TBsignatures)), 
                                decreasing = TRUE)[sort(table(unlist(TBsignatures)),
@@ -388,14 +389,14 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
   rownames(overlap_matrix) <- colnames(overlap_matrix) <- names(TBsignatures)
   over_pct <- round(overlap_matrix, 3) * 100
-  write.csv(overlap_matrix, file = "~/projects/malnutrition/manuscript_BMC_ID/figures/overlap.csv", quote = FALSE)
+  write.csv(overlap_matrix, file = "figures/overlap.csv", quote = FALSE)
 ```
 
 
 ## Figure 1. Heatmap of all signatures (ssGSEA)
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_ssGSEA.png", width = 12, height = 10, units = "in",
+  png(filename = "figures/Heatmap_ssGSEA.png", width = 12, height = 10, units = "in",
       res = 150)
   signatureHeatmap(ssgsea_res, name = "ssGSEA", 
                    signatureColNames = names(TBsignatures),
@@ -411,7 +412,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary Figure 1. Heatmap of all signatures  (GSVA)
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_GSVA.png", width = 12, height = 10, units = "in",res = 150)
+  png(filename = "figures/Heatmap_GSVA.png", width = 12, height = 10, units = "in",res = 150)
   signatureHeatmap(gsva_res, name = "GSVA", 
                    signatureColNames = names(TBsignatures),
                    annotationColNames = c("status"),
@@ -426,7 +427,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Figure 2a. Boxplots of AUCs.
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_ssGSEA.png", width = 10, height = 10, 
+  png(filename = "figures/AUC_boxplot_ssGSEA.png", width = 10, height = 10, 
       units = "in", res = 150)
   signatureBoxplot(ssgsea_res, name="ssGSEA", 
                    signatureColNames = names(TBsignatures),
@@ -439,7 +440,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Figure 2b. Boxplot of the scores (LTBI v TB) by signature
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_ssGSEA.png", width = 7, height = 5, 
+  png(filename = "figures/score_boxplot_ssGSEA.png", width = 7, height = 5, 
       units = "in", res = 150)
   par(mar = c(7,2,2,1))
   compareBoxplots(ssgsea_res, signatureColNames = names(TBsignatures),
@@ -452,7 +453,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary Figure 2a. GSVA results
   
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_GSVA.png", width = 10, height = 10, units = "in",
+  png(filename = "figures/AUC_boxplot_GSVA.png", width = 10, height = 10, units = "in",
       res = 150)
   signatureBoxplot(gsva_res, signatureColNames = names(TBsignatures),
                    annotationColName = c("status"), name = "GSVA",
@@ -465,7 +466,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary Figure 2b. GSVA results
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_GSVA.png", width = 7, height = 5, 
+  png(filename = "figures/score_boxplot_GSVA.png", width = 7, height = 5, 
       units = "in", res = 150)
   par(mar = c(7,2,2,1))
   compareBoxplots(gsva_res, signatureColNames = names(TBsignatures),
@@ -479,7 +480,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Figure 3. Heatmap of genes for selected signatures {.tabset}
 ```{r}
   # Sambarey_HIV_10
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Sambarey_HIV_10.png", width = 6, height = 4, units = "in",
+  png(filename = "figures/Sambarey_HIV_10.png", width = 6, height = 4, units = "in",
       res = 150)
   signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
                        sigGenes = TBsignatures[["Sambarey_HIV_10"]],
@@ -495,7 +496,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 ### Thompson_9
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Thompson_9.png", width = 6, height = 4, units = "in",
+  png(filename = "figures/Thompson_9.png", width = 6, height = 4, units = "in",
       res = 150)
   signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
                        TBsignatures[["Thompson_9"]],
@@ -511,7 +512,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 ### Lee_4
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Lee_4.png", width = 6, height = 4, units = "in",
+  png(filename = "figures/Lee_4.png", width = 6, height = 4, units = "in",
       res = 150)
   signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
                        TBsignatures[["Lee_4"]],
@@ -527,7 +528,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 ### Maertzdorf_4
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Maertzdorf_4.png", width = 6, height = 4, units = "in",
+  png(filename = "figures/Maertzdorf_4.png", width = 6, height = 4, units = "in",
       res = 150)
   signatureGeneHeatmap(ssgsea_res, useAssay = "log_cpm", 
                        TBsignatures[["Maertzdorf_4"]],
@@ -543,15 +544,14 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 ## Supplementary figure XX: ROC curves for all sigs
 ```{r}
-
   # ssGSEA
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/ssgsea_ROC.png", width = 11, height = 9, units = "in",
+  png(filename = "figures/ssgsea_ROC.png", width = 11, height = 9, units = "in",
       res = 150)
   signatureROCplot_CI(ssgsea_res, signatureColNames = names(TBsignatures),
                       scale = TRUE, annotationColName = "status",
                       name = 
                         "ROC Plots for Gene Signatures, 95% Confidence, ssGSEA",
-                      nrow = 6, ncol = 6, choose_colors = c(special_blue,
+                      nrow = 7, ncol = 7, choose_colors = c(special_blue,
                                                             "gray50",
                                                             "gray79"))
   dev.off()
@@ -561,13 +561,13 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 ## GSVA
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/gsva_ROC.png", width = 11, height = 9, units = "in",
+  png(filename = "figures/gsva_ROC.png", width = 11, height = 9, units = "in",
       res = 150)
   signatureROCplot_CI(gsva_res, signatureColNames = names(TBsignatures),
                       scale = TRUE, annotationColName = "status",
                       name = 
                         "ROC Plots for Gene Signatures, 95% Confidence, GSVA",
-                      nrow = 6, ncol = 6, choose_colors = c(special_blue,
+                      nrow = 7, ncol = 7, choose_colors = c(special_blue,
                                                             "gray50",
                                                             "gray79"),
                       )
@@ -579,7 +579,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   out.ssgsea <- tableAUC(ssgsea_res, "status", names(TBsignatures), 
                          output = "data.frame")
   datatable(out.ssgsea)
-  write.csv(out.ssgsea, file = "~/projects/malnutrition/manuscript_BMC_ID/figures/ssGSEA_TableAUC.csv")
+  write.csv(out.ssgsea, file = "figures/ssGSEA_TableAUC.csv")
 ```
   
 ## Supplementary figure XX: TableAUC for GSVA 
@@ -598,7 +598,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary figure 6a: PLAGE results 
 
 ```{r}
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/AUC_boxplot_.png", width = 10, height = 10, units = "in",
+  png(filename = "figures/AUC_boxplot_.png", width = 10, height = 10, units = "in",
       res = 150)
   signatureBoxplot(plage_res, signatureColNames = names(TBsignatures),
                    annotationColName = c("status"), name = "PLAGE",
@@ -610,7 +610,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary Figure 6b. PLAGE results 
 ```{r}
   
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/score_boxplot_PLAGE.png", width = 7, height = 5, 
+  png(filename = "figures/score_boxplot_PLAGE.png", width = 7, height = 5, 
       units = "in", res = 150)
   par(mar = c(7,2,2,1))
   compareBoxplots(plage_res, signatureColNames = names(TBsignatures),
@@ -623,7 +623,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ## Supplementary Figure 4. Heatmap of all signatures (PLAGE)
 ```{r}
   
-  png(filename = "~/projects/malnutrition/manuscript_BMC_ID/figures/Heatmap_PLAGE.png", width = 12, height = 10, units = "in",
+  png(filename = "figures/Heatmap_PLAGE.png", width = 12, height = 10, units = "in",
       res = 150)
   signatureHeatmap(plage_res, name = "PLAGE", 
                    signatureColNames = names(TBsignatures),
