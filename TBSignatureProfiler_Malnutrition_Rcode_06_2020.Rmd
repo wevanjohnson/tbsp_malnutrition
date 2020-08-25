@@ -147,7 +147,7 @@ singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = 
 singleCellTK::plotPCA(indataSCE, useAssay = "log_cpm", runPCA = TRUE, colorBy = "batch",shape = "status")
   dev.off()
 
-  rm(indataSCE)
+rm(indataSCE)
 rm(indataTMP)
 ```
 
@@ -186,7 +186,6 @@ rm(indataSCE)
 
 
 ### tSNE 
-
 ```{r}
 set.seed(1)
 tsne_out <- Rtsne(t(assay(indata,"log_cpm")), check_duplicates = FALSE, pca = TRUE, perplexity=10, theta=0.5, dims=2)
@@ -269,10 +268,10 @@ colorList <- list("status" = setNames(c("Red",
                                         "Blue"),
                                       c("TB_mal", "LTBI_mal")))
 
-  mat = as.matrix(assay(indata,"log_cpm")[sigGenesTB[1:500],])
+  mat <- as.matrix(assay(indata,"log_cpm")[sigGenesTB[1:500],])
   mat = t(scale(t(mat)))
 
-  df=data.frame("TB Status"=colData(indata)$Tb_status) 
+  df <- data.frame("TB Status" = colData(indata)$Tb_status) 
   annot <- HeatmapAnnotation(df = df, col = list(TB.Status = c(
     "TB" = "Red", "LTBI" = "Blue")))
   
@@ -289,7 +288,6 @@ colorList <- list("status" = setNames(c("Red",
   
 ### Pathway analysis {.tabset}
 ```{r}
-
 pathway=enrichr(sigGenesTB[1:1000],databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
 #pathway=enrichr(sigGenesTB,databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
 ```
@@ -335,7 +333,7 @@ plage_res <- runTBsigProfiler(indata, useAssay = "log_cpm",
 ```
 
 
-## Methods Figure 1: table of genes in five or more sigs, decending order
+## Methods Figure 1: Overlap of genes in the TB signature cohort listed in 5 or more signatures
 ```{r}
 # some things related to colors
 special_red <- RColorBrewer::brewer.pal(3, "Set1")[1]
@@ -346,9 +344,6 @@ col.me <- viridis::viridis(15)
 colorList <- list("status" = setNames(c(special_red,
                                         special_blue),
                                       c("TB_mal", "LTBI_mal")))
-# colorList <- list("status" = setNames(c(viridis::magma(20)[12],
-#                                         viridis::magma(20)[18]),
-#                                       c("TB_mal", "LTBI_mal")))
 
 png(filename = "figures/genes_in_5plus.png", width = 8, height = 7, 
       units = "in", res = 150)
@@ -364,17 +359,16 @@ png(filename = "figures/genes_in_5plus.png", width = 8, height = 7,
                                         decreasing = TRUE)]
   geneoverlapdf <- geneoverlapdf[order(rowSums(geneoverlapdf == "Yes"), 
                                        decreasing = TRUE),]
-  draw(Heatmap(t(as.matrix(geneoverlapdf)), col=c("white", special_blue), 
+  draw(Heatmap(t(as.matrix(geneoverlapdf)), col = c("white", special_blue), 
                row_names_gp = gpar(fontsize = 8), 
                column_names_gp = gpar(fontsize = 8), 
-               rect_gp = gpar(col="grey", lty=1),
+               rect_gp = gpar(col="grey", lty = 1),
                name = "Gene in Signature"), 
        heatmap_legend_side = "bottom")
   dev.off()
-
 ```
 
-## Methods Table XX: Signature Overlap
+## Methods Table 3: Percentage of overlapping genes between the TB signatures
 ```{r}  
 overlap_matrix <- matrix(0, nrow = length(TBsignatures), 
                            ncol = length(TBsignatures))
@@ -390,10 +384,11 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   rownames(overlap_matrix) <- colnames(overlap_matrix) <- names(TBsignatures)
   over_pct <- round(overlap_matrix, 3) * 100
   write.csv(overlap_matrix, file = "figures/overlap.csv", quote = FALSE)
+  # Altered to add color afterward and saved as xslx workbook
 ```
 
 
-## Figure 1. Heatmap of all signatures (ssGSEA)
+## Figure 2. Heatmap of all signatures (ssGSEA)
 
 ```{r}
   png(filename = "figures/Heatmap_ssGSEA.png", width = 12, height = 10, units = "in",
@@ -409,7 +404,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
 
-## Supplementary Figure 1. Heatmap of all signatures  (GSVA)
+## Supplementary Figure. Heatmap of all signatures  (GSVA)
 
 ```{r}
   png(filename = "figures/Heatmap_GSVA.png", width = 12, height = 10, units = "in",res = 150)
@@ -424,7 +419,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
 
-## Figure 2a. Boxplots of AUCs.
+## Figure 3a. Boxplots of AUCs (ssGSEA).
 
 ```{r}
   png(filename = "figures/AUC_boxplot_ssGSEA.png", width = 10, height = 10, 
@@ -437,7 +432,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
 
-## Figure 2b. Boxplot of the scores (LTBI v TB) by signature
+## Figure 3b. Boxplot of the scores (LTBI vs. TB) by signature (ssGSEA).
 
 ```{r}
   png(filename = "figures/score_boxplot_ssGSEA.png", width = 7, height = 5, 
@@ -450,7 +445,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
 
-## Supplementary Figure 2a. GSVA results
+## Supplementary Figure: Boxplots of AUCs (GSVA).
   
 ```{r}
   png(filename = "figures/AUC_boxplot_GSVA.png", width = 10, height = 10, units = "in",
@@ -463,7 +458,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
   
-## Supplementary Figure 2b. GSVA results
+## Supplementary Figure: Boxplot of the scores (LTBI vs. TB) by signature (GSVA)
 
 ```{r}
   png(filename = "figures/score_boxplot_GSVA.png", width = 7, height = 5, 
@@ -477,7 +472,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
   
-## Figure 3. Heatmap of genes for selected signatures {.tabset}
+## Figure 4. Heatmap of genes for selected signatures {.tabset}
 ```{r}
   # Sambarey_HIV_10
   png(filename = "figures/Sambarey_HIV_10.png", width = 6, height = 4, units = "in",
@@ -542,7 +537,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
   
-## Supplementary figure XX: ROC curves for all sigs
+## Supplementary figure: ROC curves for all signatures (ssGSEA).
 ```{r}
   # ssGSEA
   png(filename = "figures/ssgsea_ROC.png", width = 11, height = 9, units = "in",
@@ -559,7 +554,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
   
-## GSVA
+## Supplementary figure: ROC curves for all signatures (GSVA).
 ```{r}
   png(filename = "figures/gsva_ROC.png", width = 11, height = 9, units = "in",
       res = 150)
@@ -574,31 +569,90 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
   
-## Supplementary Table 1: TableAUC for ssGSEA 
+## Supplementary Table: TableAUC for ssGSEA 
 ```{r}
-  out.ssgsea <- tableAUC(ssgsea_res, "status", names(TBsignatures), 
+  out.ssgsea <- tableAUC(ssgsea_res, "status", names(TBsignatures),
                          output = "data.frame")
+
+  # Replace columns with t-test approach
+  SE_scored <- ssgsea_res
+  annotationColName <- "status"
+  signatureColNames <- names(TBsignatures)
+  annotationData <- droplevels(SummarizedExperiment::colData(
+    SE_scored)[annotationColName][, 1])
+  
+  for (i in signatureColNames) {
+    which.sig <- which(signatureColNames == i)
+    score <- SummarizedExperiment::colData(SE_scored)[i][, 1]
+    roc1 <- suppressMessages(pROC::roc(predictor = score,
+                                       response = annotationData))
+    conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
+    out.ssgsea[which.sig, 4] <- conf[1]
+    out.ssgsea[which.sig, 6] <- conf[2]
+  }
+  
+  colnames(out.ssgsea)[c(4, 6)] <- c("LowerCI", "UpperCI")
+
   datatable(out.ssgsea)
   write.csv(out.ssgsea, file = "figures/ssGSEA_TableAUC.csv")
 ```
   
-## Supplementary figure XX: TableAUC for GSVA 
+## Supplementary Table: TableAUC for GSVA 
 ```{r}
-  out.gsva <- tableAUC(gsva_res, "status", names(TBsignatures), output = "data.frame")  
+  out.gsva <- tableAUC(gsva_res, "status", names(TBsignatures), output = "data.frame")
+
+  # Replace columns with t-test approach
+  SE_scored <- gsva_res
+  annotationColName <- "status"
+  signatureColNames <- names(TBsignatures)
+  annotationData <- droplevels(SummarizedExperiment::colData(
+    SE_scored)[annotationColName][, 1])
+  
+  for (i in signatureColNames) {
+    which.sig <- which(signatureColNames == i)
+    score <- SummarizedExperiment::colData(SE_scored)[i][, 1]
+    roc1 <- suppressMessages(pROC::roc(predictor = score,
+                                       response = annotationData))
+    conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
+    out.gsva[which.sig, 4] <- conf[1]
+    out.gsva[which.sig, 6] <- conf[2]
+  }
+  
+  colnames(out.gsva)[c(4, 6)] <- c("LowerCI", "UpperCI")
   datatable(out.gsva)
 ```
   
-## Supplementary figure XX: TableAUC for PLAGE 
+## Supplementary Table: TableAUC for PLAGE 
 ```{r}
-  out.plage <- tableAUC(plage_res, "status", names(TBsignatures), output = "data.frame")  
+  out.plage <- tableAUC(plage_res, "status", names(TBsignatures),
+                        output = "data.frame")
+
+  # Replace columns with t-test approach
+  SE_scored <- plage_res
+  annotationColName <- "status"
+  signatureColNames <- names(TBsignatures)
+  annotationData <- droplevels(SummarizedExperiment::colData(
+    SE_scored)[annotationColName][, 1])
+  
+  for (i in signatureColNames) {
+    which.sig <- which(signatureColNames == i)
+    score <- SummarizedExperiment::colData(SE_scored)[i][, 1]
+    roc1 <- suppressMessages(pROC::roc(predictor = score,
+                                       response = annotationData))
+    conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
+    out.plage[which.sig, 4] <- conf[1]
+    out.plage[which.sig, 6] <- conf[2]
+  }
+  
+  colnames(out.plage)[c(4, 6)] <- c("LowerCI", "UpperCI")
+
   datatable(out.plage)
 ```
 
-
-## Supplementary figure 6a: PLAGE results 
-
+## Supplementary Figure: Boxplots of AUCs (PLAGE).
 ```{r}
-  png(filename = "figures/AUC_boxplot_.png", width = 10, height = 10, units = "in",
+  png(filename = "figures/AUC_boxplot_PLAGE.png", width = 10, height = 10,
+      units = "in",
       res = 150)
   signatureBoxplot(plage_res, signatureColNames = names(TBsignatures),
                    annotationColName = c("status"), name = "PLAGE",
@@ -607,9 +661,8 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
   
-## Supplementary Figure 6b. PLAGE results 
+## Supplementary Figure: Boxplot of the scores (LTBI vs. TB) by signature (PLAGE)
 ```{r}
-  
   png(filename = "figures/score_boxplot_PLAGE.png", width = 7, height = 5, 
       units = "in", res = 150)
   par(mar = c(7,2,2,1))
@@ -620,9 +673,8 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   dev.off()
 ```
   
-## Supplementary Figure 4. Heatmap of all signatures (PLAGE)
+## Supplementary Figure: Heatmap of all signatures (PLAGE)
 ```{r}
-  
   png(filename = "figures/Heatmap_PLAGE.png", width = 12, height = 10, units = "in",
       res = 150)
   signatureHeatmap(plage_res, name = "PLAGE", 
@@ -638,7 +690,6 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   
 
 ##  Session Info
-
 ```{r session info}
 sessionInfo()
 ```
