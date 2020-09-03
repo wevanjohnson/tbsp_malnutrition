@@ -574,7 +574,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
   out.ssgsea <- tableAUC(ssgsea_res, "status", names(TBsignatures),
                          output = "data.frame")
 
-  # Replace columns with t-test approach
+  # Add columns with t-test approach
   SE_scored <- ssgsea_res
   annotationColName <- "status"
   signatureColNames <- names(TBsignatures)
@@ -587,11 +587,11 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.ssgsea[which.sig, 4] <- conf[1]
-    out.ssgsea[which.sig, 6] <- conf[2]
+    out.ssgsea[which.sig, 7] <- conf[1]
+    out.ssgsea[which.sig, 8] <- conf[2]
   }
   
-  colnames(out.ssgsea)[c(4, 6)] <- c("LowerCI", "UpperCI")
+  colnames(out.ssgsea)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
 
   datatable(out.ssgsea)
   write.csv(out.ssgsea, file = "figures/ssGSEA_TableAUC.csv")
@@ -614,11 +614,11 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.gsva[which.sig, 4] <- conf[1]
-    out.gsva[which.sig, 6] <- conf[2]
+    out.gsva[which.sig, 7] <- conf[1]
+    out.gsva[which.sig, 8] <- conf[2]
   }
   
-  colnames(out.gsva)[c(4, 6)] <- c("LowerCI", "UpperCI")
+  colnames(out.gsva)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
   datatable(out.gsva)
 ```
   
@@ -640,11 +640,11 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.plage[which.sig, 4] <- conf[1]
-    out.plage[which.sig, 6] <- conf[2]
+    out.plage[which.sig, 7] <- conf[1]
+    out.plage[which.sig, 8] <- conf[2]
   }
   
-  colnames(out.plage)[c(4, 6)] <- c("LowerCI", "UpperCI")
+  colnames(out.plage)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
 
   datatable(out.plage)
 ```
