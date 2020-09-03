@@ -587,8 +587,8 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.ssgsea[which.sig, 7] <- conf[1]
-    out.ssgsea[which.sig, 8] <- conf[2]
+    out.ssgsea[which.sig, 7] <- round(conf[1], 4)
+    out.ssgsea[which.sig, 8] <- round(conf[2], 4)
   }
   
   colnames(out.ssgsea)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
@@ -614,8 +614,8 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.gsva[which.sig, 7] <- conf[1]
-    out.gsva[which.sig, 8] <- conf[2]
+    out.gsva[which.sig, 7] <- round(conf[1], 4)
+    out.gsva[which.sig, 8] <- round(conf[2], 4)
   }
   
   colnames(out.gsva)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
@@ -640,8 +640,8 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
     roc1 <- suppressMessages(pROC::roc(predictor = score,
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
-    out.plage[which.sig, 7] <- conf[1]
-    out.plage[which.sig, 8] <- conf[2]
+    out.plage[which.sig, 7] <- round(conf[1], 4)
+    out.plage[which.sig, 8] <- round(conf[2], 4)
   }
   
   colnames(out.plage)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
