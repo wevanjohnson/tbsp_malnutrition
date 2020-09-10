@@ -290,6 +290,13 @@ colorList <- list("status" = setNames(c("Red",
 ```{r}
 pathway=enrichr(sigGenesTB[1:1000],databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
 #pathway=enrichr(sigGenesTB,databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+
+#try 250, 500, 2000 and all genes per the paper reviewers request
+#pathway=enrichr(sigGenesTB[1:250],databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+#pathway=enrichr(sigGenesTB[1:500],databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+#pathway=enrichr(sigGenesTB[1:2000],databases =c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+#pathway=enrichr(sigGenesTB,databases = c("WikiPathways_2013","Reactome_2016","KEGG_2016","Panther_2016"))
+
 ```
 
 #### Wiki Pathways
@@ -366,6 +373,30 @@ png(filename = "figures/genes_in_5plus.png", width = 8, height = 7,
                name = "Gene in Signature"), 
        heatmap_legend_side = "bottom")
   dev.off()
+  
+ ### add a version with all genes >2 for the reviewers..... 
+  png(filename = "figures/genes_in_3plus.png", width = 8, height = 7, 
+      units = "in", res = 150)
+  genesin5ormore <- names(sort(table(unlist(TBsignatures)), 
+                               decreasing = TRUE)[sort(table(unlist(TBsignatures)),
+                                                       decreasing = TRUE) > 2])
+  geneoverlapdf <- data.frame(row.names = genesin5ormore)
+  for(i in names(TBsignatures)){
+    geneoverlapdf[,i] <- ifelse(rownames(geneoverlapdf)%in% TBsignatures[[i]], 
+                                "Yes", "No")
+  }
+  geneoverlapdf <- geneoverlapdf[,order(colSums(geneoverlapdf == "Yes"), 
+                                        decreasing = TRUE)]
+  geneoverlapdf <- geneoverlapdf[order(rowSums(geneoverlapdf == "Yes"), 
+                                       decreasing = TRUE),]
+  draw(Heatmap(t(as.matrix(geneoverlapdf)), col = c("white", special_blue), 
+               row_names_gp = gpar(fontsize = 8), 
+               column_names_gp = gpar(fontsize = 8), 
+               rect_gp = gpar(col="grey", lty = 1),
+               name = "Gene in Signature"), 
+       heatmap_legend_side = "bottom")
+  dev.off()
+  
 ```
 
 ## Methods Table 3: Percentage of overlapping genes between the TB signatures
