@@ -324,19 +324,29 @@ datatable(pathway$Panther_2016[pathway$Panther_2016$Adjusted.P.value<.5,],option
 ## Run the TBSignatureProfiler
 
 ```{r}
-TBsignatures$'Suliman_RISK_4' <- c("GAS6","SEPTIN4","CD1C","BLK")
-TBsignatures$'Lee_4' <- c("INTS13", "DHX29", "NEMF",  "PTPRC")
-
 indata$TB.status <- factor(paste(indata$status))
-siglist_mal <- names(TBsignatures)
 
 ssgsea_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
                                algorithm = "ssGSEA")
 gsva_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
-                               algorithm = "GSVA")
+                             algorithm = "GSVA")
 plage_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
-                             algorithm = "PLAGE")
+                              algorithm = "PLAGE")
 
+# Add single transcript signatures
+TBsignatures$"BATF" <- "BATF"
+TBsignatures$"NPC2" <- "NPC2"
+siglist_mal <- names(TBsignatures)
+
+SummarizedExperiment::colData(ssgsea_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
+SummarizedExperiment::colData(ssgsea_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+
+SummarizedExperiment::colData(gsva_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
+SummarizedExperiment::colData(gsva_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+
+SummarizedExperiment::colData(plage_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
+SummarizedExperiment::colData(plage_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+```
 ```
 
 
