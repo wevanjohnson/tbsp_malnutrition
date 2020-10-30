@@ -1,6 +1,6 @@
 ---
 title: "TBSignatureProfiler on Malnutrition Data"
-author: "Evan Johnson"
+author: "Evan Johnson and Aubrey Odom"
 date: "8/21/2020"
 output:
   html_document:
@@ -28,6 +28,9 @@ suppressPackageStartupMessages({
   library(enrichR)
   library(singleCellTK)
 })
+
+## remove the following signatures from the list, as they were not part of the TBSG at the time of submission:
+TBsignatures <- TBsignatures[!(names(TBsignatures)%in%c("Darboe_RISK_11","Dawany_HIV_251","Tornheim_71","Tornheim_RES_25"))]
 
 ```
 
@@ -333,20 +336,6 @@ gsva_res <- runTBsigProfiler(indata, useAssay = "log_cpm",
 plage_res <- runTBsigProfiler(indata, useAssay = "log_cpm", 
                               algorithm = "PLAGE")
 
-# Add single transcript signatures
-TBsignatures$"BATF" <- "BATF"
-TBsignatures$"NPC2" <- "NPC2"
-siglist_mal <- names(TBsignatures)
-
-SummarizedExperiment::colData(ssgsea_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
-SummarizedExperiment::colData(ssgsea_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
-
-SummarizedExperiment::colData(gsva_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
-SummarizedExperiment::colData(gsva_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
-
-SummarizedExperiment::colData(plage_res)$`BATF` <- assay(indata, "log_cpm")["BATF", ]
-SummarizedExperiment::colData(plage_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
-```
 ```
 
 
@@ -429,9 +418,38 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
 ```
 
 
+## Add single transcript signatures
+```{r}
+TBsignatures$"BATF2" <- "BATF2"
+TBsignatures$"NPC2" <- "NPC2"
+siglist_mal <- names(TBsignatures)
+
+SummarizedExperiment::colData(ssgsea_res)$`BATF2` <- assay(indata, "log_cpm")["BATF2", ]
+SummarizedExperiment::colData(ssgsea_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+
+SummarizedExperiment::colData(gsva_res)$`BATF2` <- assay(indata, "log_cpm")["BATF2", ]
+SummarizedExperiment::colData(gsva_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+
+SummarizedExperiment::colData(plage_res)$`BATF2` <- assay(indata, "log_cpm")["BATF2", ]
+SummarizedExperiment::colData(plage_res)$`NPC2` <- assay(indata, "log_cpm")["NPC2", ]
+
+which(unlist(TBsignatures)=="BATF")
+which(unlist(TBsignatures)=="BATF2")
+which(unlist(TBsignatures)=="NPC2")
+```
+
 ## Figure 2. Heatmap of all signatures (ssGSEA)
 
-```{r}
+```{R}
+ind <- 
+sigAnnotData$names %in% c("Darboe_RISK_11","Dawany_HIV_251","Tornheim_71","Tornheim_RES_25")
+
+new_SAnnotData <- data.frame(rbind(
+sigAnnotData[!ind, ],
+c("BATF2", "Single", "NA"),
+c("NPC2", "Single", "NA")
+))
+
   png(filename = "figures/Heatmap_ssGSEA.png", width = 12, height = 10, units = "in",
       res = 150)
   signatureHeatmap(ssgsea_res, name = "ssGSEA", 
@@ -441,6 +459,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
                    choose_color = col.me,
                    cluster_columns = TRUE,
                    split_heatmap = "disease",
+                   annotationSignature = new_SAnnotData,
                    colList = colorList)
   dev.off()
 ```
@@ -456,6 +475,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
                    choose_color = col.me,
                    cluster_columns = TRUE,
                    split_heatmap = "disease",
+                   annotationSignature = new_SAnnotData,
                    colList = colorList)
   dev.off()
 ```
@@ -725,6 +745,7 @@ overlap_matrix <- matrix(0, nrow = length(TBsignatures),
                    choose_color = col.me,
                    cluster_columns = TRUE,
                    split_heatmap = "disease",
+                   annotationSignature = new_SAnnotData,
                    colList = colorList)
   dev.off()
 ```
