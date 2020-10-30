@@ -649,7 +649,7 @@ c("NPC2", "Single", "NA")
                                        response = annotationData))
     conf <- pROC::ci.auc(roc1, method = "delong", progress = "none")
     out.ssgsea[which.sig, 7] <- round(conf[1], 4)
-    out.ssgsea[which.sig, 8] <- round(conf[2], 4)
+    out.ssgsea[which.sig, 8] <- round(conf[3], 4)
   }
   
   colnames(out.ssgsea)[c(7, 8)] <- c("LowerCISunXu", "UpperCISunXu")
